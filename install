@@ -1,0 +1,38 @@
+#!/bin/bash
+source ./submodules/bootstrap/logging
+set -euo pipefail ; IFS=$'\n\t'
+
+#-----------
+# Configurations
+#-----------
+
+ELIXIR_VERSION=${ELIXIR_VERSION-v1.0.0}
+ELIXIR_MODE=${ELIXIR_MODE-docker}
+ELIXIR_LAUNCHER_DIR=${ELIXIR_LAUNCHER_DIR-/var/local/elixir/$ELIXIR_VERSION}
+
+EXRM_LOG_DIR=${EXRM_LOG_DIR-/var/log}
+EXRM_PROXY_PORT=${EXRM_PROXY_PORT-80}
+EXRM_NAME=${EXRM_NAME-sampleexrm}
+EXRM_VERSION=${EXRM_VERSION-0.0.1}
+EXRM_LAUNCHER_DIR=${EXRM_LAUNCHER_DIR-/var/local/apps/${EXRM_NAME}}
+EXRM_REPO=${EXRM_REPO-git@github.com:aforward/sampleexrm.git}
+EXRM_HTTP_PORT=${EXRM_HTTP_PORT-80}
+EXRM_SSL_PORT=${EXRM_SSL_PORT-443}
+EXRM_MODE=${EXRM_MODE:as_is} # supports as_is, nginx
+EXRM_APP_PORT=${EXRM_INTERNAL_PORT-$EXRM_HTTP_PORT}
+EXRM_SERVER_NAMES=${EXRM_SERVER_NAMES-_}
+
+#-----------
+# Install Script
+#-----------
+
+notify "Install $EXRM_NAME ($EXRM_VERSION, elixir $ELIXIR_VERSION)..."
+
+ELIXIR_VERSION=$ELIXIR_VERSION \
+  ELIXIR_MODE=$ELIXIR_MODE \
+  ELIXIR_VERSION=$ELIXIR_VERSION \
+  ./submodules/elixir/install
+
+mkdir -p ${EXRM_LAUNCHER_DIR}
+
+notify "DONE, Install Elixir."

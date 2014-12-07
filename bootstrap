@@ -1,0 +1,16 @@
+#!/bin/bash
+mkdir -p ./nodes
+
+printf "%b" "#!/bin/bash
+EXRM_NAME=samplephoenix \\
+  ELIXIR_VERSION=1.0.2 \\
+  EXRM_REPO=git@github.com:aforward/sampleexrm.git \\
+  ./submodules/exrm/install
+" > ./nodes/exrm
+
+chmod 755 ./nodes/exrm
+
+capbash install deploykeys
+capbash install git
+capbash install docker
+capbash install elixir
