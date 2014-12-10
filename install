@@ -7,18 +7,16 @@ set -euo pipefail ; IFS=$'\n\t'
 #-----------
 
 ELIXIR_VERSION=${ELIXIR_VERSION-v1.0.0}
-ELIXIR_MODE=${ELIXIR_MODE-docker}
-ELIXIR_LAUNCHER_DIR=${ELIXIR_LAUNCHER_DIR-/var/local/elixir/$ELIXIR_VERSION}
+
+export EXRM_NAME=${EXRM_NAME-sampleexrm}
+export EXRM_VERSION=${EXRM_VERSION-0.0.1}
 
 EXRM_LOG_DIR=${EXRM_LOG_DIR-/var/log}
 EXRM_PROXY_PORT=${EXRM_PROXY_PORT-80}
-EXRM_NAME=${EXRM_NAME-sampleexrm}
-EXRM_VERSION=${EXRM_VERSION-0.0.1}
 EXRM_LAUNCHER_DIR=${EXRM_LAUNCHER_DIR-/var/local/apps/${EXRM_NAME}}
-EXRM_REPO=${EXRM_REPO-git@github.com:aforward/sampleexrm.git}
+EXRM_REPO=${EXRM_REPO-https://github.com/aforward/sampleexrm.git}
 EXRM_HTTP_PORT=${EXRM_HTTP_PORT-80}
 EXRM_SSL_PORT=${EXRM_SSL_PORT-443}
-EXRM_MODE=${EXRM_MODE:as_is} # supports as_is, nginx
 EXRM_APP_PORT=${EXRM_INTERNAL_PORT-$EXRM_HTTP_PORT}
 EXRM_SERVER_NAMES=${EXRM_SERVER_NAMES-_}
 
@@ -28,11 +26,26 @@ EXRM_SERVER_NAMES=${EXRM_SERVER_NAMES-_}
 
 notify "Install $EXRM_NAME ($EXRM_VERSION, elixir $ELIXIR_VERSION)..."
 
-ELIXIR_VERSION=$ELIXIR_VERSION \
-  ELIXIR_MODE=$ELIXIR_MODE \
-  ELIXIR_VERSION=$ELIXIR_VERSION \
-  ./submodules/elixir/install
+mkdir -p ${EXRM_LAUNCHER_DIR}/bin
 
-mkdir -p ${EXRM_LAUNCHER_DIR}
+TEMPLATE=./submodules/exrm/files/upgrade \
+  LOCATION=${EXRM_LAUNCHER_DIR}/bin/upgrade \
+  ./submodules/docker/copyif @EXRM_NAME@ $EXRM_NAME @EXRM_VERSION@ $EXRM_VERSION
 
-notify "DONE, Install Elixir."
+TEMPLATE=./submodules/bootstrap/logging \
+  LOCATION=${EXRM_LAUNCHER_DIR}/bin/logging \
+  ./submodules/docker/copyif
+
+cp ./submodules/exrm/files/exrm.dockerfile ${EXRM_LAUNCHER_DIR}/Dockerfile
+cp ./submodules/exrm/files/exrm.dockerignore ${EXRM_LAUNCHER_DIR}/.dockerignore
+sed -i s/@ELIXIR_VERSION@/$ELIXIR_VERSION/g ${EXRM_LAUNCHER_DIR}/Dockerfile
+sed -i s/@EXRM_VERSION@/$EXRM_VERSION/g ${EXRM_LAUNCHER_DIR}/Dockerfile
+sed -i "s|@EXRM_REPO@|$EXRM_REPO|g" ${EXRM_LAUNCHER_DIR}/Dockerfile
+LAUNCHER_DIR=$EXRM_LAUNCHER_DIR NAME=$EXRM_NAME VERSION=$EXRM_VERSION ./submodules/docker/build
+
+NAME=$EXRM_NAME IMAGE_NAME=${EXRM_NAME}:${EXRM_VERSION} DIR=$EXRM_LAUNCHER_DIR \
+  START=./submodules/exrm/files/_start \
+  DEBUG=./submodules/exrm/files/_debug \
+  ./submodules/docker/helpers
+
+notify "DONE, Install $EXRM_NAME ($EXRM_VERSION, elixir $ELIXIR_VERSION)"

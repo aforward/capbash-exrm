@@ -1,0 +1,2 @@
+docker run -d -t
+  ${EXRM_NAME}:${EXRM_VERSION} /bin/bash

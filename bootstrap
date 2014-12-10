@@ -2,9 +2,9 @@
 mkdir -p ./nodes
 
 printf "%b" "#!/bin/bash
-EXRM_NAME=samplephoenix \\
-  ELIXIR_VERSION=1.0.2 \\
-  EXRM_REPO=git@github.com:aforward/sampleexrm.git \\
+EXRM_NAME=sampleexrm \\
+  ELIXIR_VERSION=v1.0.2 \\
+  EXRM_REPO=https://github.com/aforward/sampleexrm.git \\
   ./submodules/exrm/install
 " > ./nodes/exrm
 

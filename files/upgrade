@@ -1,0 +1,24 @@
+#!/bin/bash
+source /usr/local/dockerbin/logging
+
+if [[ "$LOGLEVEL" -le "$DEBUG_LEVEL" ]]; then
+  EXRM_OUTPUT=${LAUNCHER_DIR}/docker_build.log
+else
+  EXRM_OUTPUT=/dev/null
+fi
+
+EXRM_VERSION=${1-@EXRM_VERSION@}
+
+notify "Upgrading @EXRM_NAME@ to $EXRM_VERSION..."
+
+cd /opt/app
+debug "  -- git checkout $EXRM_VERSION"
+IGNORE=$(git checkout $EXRM_VERSION 2>&1)
+debug "  -- mix release"
+mix release 2>&1 > $EXRM_OUTPUT
+debug_all $EXRM_OUTPUT
+debug "  -- Upgrading /opt/app/@EXRM_NAME@/bin/@EXRM_NAME@ upgrade $EXRM_VERSION"
+/opt/app/rel/@EXRM_NAME@/bin/@EXRM_NAME@ upgrade $EXRM_VERSION 2>&1 > $EXRM_OUTPUT
+debug_all $EXRM_OUTPUT
+
+notify "DONE, Upgrading @EXRM_NAME@ to $EXRM_VERSION"
